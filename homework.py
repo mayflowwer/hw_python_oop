@@ -30,7 +30,7 @@ class Training:
                  duration: float,
                  weight: float,
                  ) -> None:
-        self.training_type = 'default'
+        self.training_type = 'Default'
         self.action = action
         self.duration = duration
         self.weight = weight
@@ -66,11 +66,10 @@ class Running(Training):
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий в беге."""
-        return (constants.RUN_COEFF_CALORIE_1
-                * self.mean_speed
-                - constants.RUN_COEFF_CALORIE_2) * (
-                self.weight / constants.M_IN_KM
-                * (self.duration * 60))
+        return constants.RN_COEFF_1 \
+            * self.mean_speed \
+            - constants.RN_COEFF_2 * self.weight \
+            / constants.M_IN_KM * self.duration * 60
 
 
 class SportsWalking(Training):
@@ -86,9 +85,9 @@ class SportsWalking(Training):
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий в ходьбе."""
-        return (constants.WALK_COEFF_CALORIE_1 * self.weight
+        return (constants.WLK_COEFF_1 * self.weight
                 + (self.mean_speed ** 2 // self.height)
-                * 0.029 * self.weight) * (self.duration * 60)
+                * constants.WLK_COEFF_2 * self.weight) * (self.duration * 60)
 
 
 class Swimming(Training):
@@ -110,13 +109,13 @@ class Swimming(Training):
     def get_mean_speed(self) -> float:
         """Получить среднюю скорость движения."""
         return self.length_pool * self.count_pool / (
-                constants.M_IN_KM / self.duration)
+            constants.M_IN_KM / self.duration)
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
         return (self.mean_speed
-                + constants.SWIM_COEFF_CALORIE_1) * (
-                constants.SWIM_COEFF_CALORIE_2 * self.weight)
+                + constants.SWM_COEFF_1) * (
+            constants.SWM_COEFF_2 * self.weight)
 
 
 def read_package(workout_type: str, data: list) -> Training:
