@@ -1,7 +1,6 @@
 from typing import Union
 
-from constants import LEN_STEP, M_IN_KM, RUN_COEFF_CALORIE_1, RUN_COEFF_CALORIE_2, WALK_COEFF_CALORIE_1, \
-    SWIM_COEFF_CALORIE_1, SWIM_COEFF_CALORIE_2, LEN_PADDLE
+import constants
 
 
 class InfoMessage:
@@ -40,7 +39,7 @@ class Training:
 
     def get_distance(self) -> float:
         """Получить дистанцию в км."""
-        return self.action * LEN_STEP / M_IN_KM
+        return self.action * constants.LEN_STEP / constants.M_IN_KM
 
     def get_mean_speed(self) -> float:
         """Получить среднюю скорость движения."""
@@ -67,8 +66,8 @@ class Running(Training):
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий в беге."""
-        return (RUN_COEFF_CALORIE_1 * self.mean_speed
-                - RUN_COEFF_CALORIE_2) * self.weight / M_IN_KM * (
+        return (constants.RUN_COEFF_CALORIE_1 * self.mean_speed
+                - constants.RUN_COEFF_CALORIE_2) * self.weight / constants.M_IN_KM * (
                     self.duration * 60)
 
 
@@ -85,7 +84,7 @@ class SportsWalking(Training):
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий в ходьбе."""
-        return (WALK_COEFF_CALORIE_1 * self.weight
+        return (constants.WALK_COEFF_CALORIE_1 * self.weight
                 + (self.mean_speed ** 2 // self.height)
                 * 0.029 * self.weight) * (self.duration * 60)
 
@@ -104,7 +103,7 @@ class Swimming(Training):
 
     def get_distance(self) -> float:
         """Получить дистанцию в км."""
-        return self.action * LEN_PADDLE / M_IN_KM
+        return self.action * constants.LEN_PADDLE / constants.M_IN_KM
 
     def get_mean_speed(self) -> float:
         """Получить среднюю скорость движения."""
@@ -113,8 +112,8 @@ class Swimming(Training):
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
-        return (self.mean_speed + SWIM_COEFF_CALORIE_1) * (
-                SWIM_COEFF_CALORIE_2 * self.weight)
+        return (self.mean_speed + constants.SWIM_COEFF_CALORIE_1) * (
+                constants.SWIM_COEFF_CALORIE_2 * self.weight)
 
 
 def read_package(workout_type: str, data: list) -> Training:
