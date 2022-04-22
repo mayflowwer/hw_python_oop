@@ -16,10 +16,10 @@ class InfoMessage:
     def get_message(self):
         """Возвращает строку с инфомацией о тренировке."""
         return (f'Тип тренировки: {self.training_type}; '
-                f'Длительность: {round(self.duration, 3)} ч.; '
-                f'Дистанция: {round(self.distance, 3)} км; '
-                f'Ср. скорость: {round(self.mean_speed, 3)} км/ч; '
-                f'Потрачено ккал: {round(self.calories, 3)}.')
+                f'Длительность: {format(self.duration, ".3f")} ч.; '
+                f'Дистанция: {format(self.distance, ".3f")} км; '
+                f'Ср. скорость: {format(self.mean_speed, ".3f")} км/ч; '
+                f'Потрачено ккал: {format(self.calories, ".3f")}.')
 
 
 class Training:
@@ -32,14 +32,15 @@ class Training:
                  ) -> None:
         self.training_type = 'Default'
         self.action = action
-        self.duration = duration
+        self.duration = float(duration)
         self.weight = weight
+        self.LEN_STEP = constants.LEN_STEP
         self.distance = self.get_distance()
         self.mean_speed = self.get_mean_speed()
 
     def get_distance(self) -> float:
         """Получить дистанцию в км."""
-        return self.action * constants.LEN_STEP / constants.M_IN_KM
+        return self.action * self.LEN_STEP / constants.M_IN_KM
 
     def get_mean_speed(self) -> float:
         """Получить среднюю скорость движения."""
@@ -58,6 +59,7 @@ class Running(Training):
     """Тренировка: бег."""
 
     def __init__(self, action, duration, weight):
+        self.LEN_STEP = constants.LEN_STEP
         super().__init__(action, duration, weight)
         self.training_type = 'Running'
         self.distance = self.get_distance()
@@ -66,9 +68,9 @@ class Running(Training):
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий в беге."""
-        return constants.RN_COEFF_1 \
-            * self.mean_speed \
-            - constants.RN_COEFF_2 * self.weight \
+        return (constants.RN_COEFF_1
+                * self.mean_speed
+                - constants.RN_COEFF_2) * self.weight\
             / constants.M_IN_KM * self.duration * 60
 
 
@@ -77,8 +79,9 @@ class SportsWalking(Training):
 
     def __init__(self, action, duration, weight, height):
         self.height = height
+        self.LEN_STEP = constants.LEN_STEP
         super().__init__(action, duration, weight)
-        self.training_type = 'Sports_walking'
+        self.training_type = 'SportsWalking'
         self.distance = self.get_distance()
         self.mean_speed = self.get_mean_speed()
         self.calories = self.get_spent_calories()
@@ -87,7 +90,7 @@ class SportsWalking(Training):
         """Получить количество затраченных калорий в ходьбе."""
         return (constants.WLK_COEFF_1 * self.weight
                 + (self.mean_speed ** 2 // self.height)
-                * constants.WLK_COEFF_2 * self.weight) * (self.duration * 60)
+                * constants.WLK_COEFF_2 * self.weight) * self.duration * 60
 
 
 class Swimming(Training):
@@ -97,6 +100,7 @@ class Swimming(Training):
         self.length_pool = length_pool
         self.count_pool = count_pool
         super().__init__(action, duration, weight)
+        self.LEN_STEP = constants.LEN_PADDLE
         self.training_type = 'Swimming'
         self.distance = self.get_distance()
         self.mean_speed = self.get_mean_speed()
@@ -104,18 +108,18 @@ class Swimming(Training):
 
     def get_distance(self) -> float:
         """Получить дистанцию в км."""
-        return self.action * constants.LEN_PADDLE / constants.M_IN_KM
+        return self.action * self.LEN_STEP / constants.M_IN_KM
 
     def get_mean_speed(self) -> float:
         """Получить среднюю скорость движения."""
-        return self.length_pool * self.count_pool / (
-            constants.M_IN_KM / self.duration)
+        return self.length_pool * self.count_pool\
+            / constants.M_IN_KM / self.duration
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
         return (self.mean_speed
-                + constants.SWM_COEFF_1) * (
-            constants.SWM_COEFF_2 * self.weight)
+                + constants.SWM_COEFF_1)\
+            * constants.SWM_COEFF_2 * self.weight
 
 
 def read_package(workout_type: str, data: list) -> Training:
