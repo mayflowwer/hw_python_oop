@@ -6,7 +6,13 @@ import constants
 class InfoMessage:
     """Информационное сообщение о тренировке."""
 
-    def __init__(self, training_type, duration, distance, speed, calories) -> None:
+    def __init__(self,
+                 training_type,
+                 duration,
+                 distance,
+                 speed,
+                 calories
+                 ) -> None:
         self.training_type = training_type
         self.duration = duration
         self.distance = distance
@@ -54,7 +60,11 @@ class Training:
 
     def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
-        return InfoMessage(self.training_type, self.duration, self.distance, self.mean_speed, self.calories)
+        return InfoMessage(self.training_type,
+                           self.duration,
+                           self.distance,
+                           self.mean_speed,
+                           self.calories)
 
 
 class Running(Training):
