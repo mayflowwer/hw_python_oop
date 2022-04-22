@@ -6,7 +6,7 @@ import constants
 class InfoMessage:
     """Информационное сообщение о тренировке."""
 
-    def __init__(self, training) -> None:
+    def __init__(self, training: 'Training') -> None:
         self.training_type = training.training_type
         self.duration = training.duration
         self.distance = training.distance
@@ -24,17 +24,18 @@ class InfoMessage:
 
 class Training:
     """Базовый класс тренировки."""
+    training_type = 'Default'
+    LEN_STEP = constants.LEN_STEP
+    M_IN_KM = constants.M_IN_KM
 
     def __init__(self,
                  action: int,
                  duration: float,
                  weight: float,
                  ) -> None:
-        self.training_type = 'Default'
         self.action = action
-        self.duration = float(duration)
+        self.duration = duration
         self.weight = weight
-        self.LEN_STEP = constants.LEN_STEP
         self.distance = self.get_distance()
         self.mean_speed = self.get_mean_speed()
 
@@ -57,11 +58,11 @@ class Training:
 
 class Running(Training):
     """Тренировка: бег."""
+    training_type = 'Running'
+    LEN_STEP = constants.LEN_STEP
 
     def __init__(self, action, duration, weight):
-        self.LEN_STEP = constants.LEN_STEP
         super().__init__(action, duration, weight)
-        self.training_type = 'Running'
         self.distance = self.get_distance()
         self.mean_speed = self.get_mean_speed()
         self.calories = self.get_spent_calories()
@@ -76,12 +77,12 @@ class Running(Training):
 
 class SportsWalking(Training):
     """Тренировка: спортивная ходьба."""
+    training_type = 'SportsWalking'
+    LEN_STEP = constants.LEN_STEP
 
     def __init__(self, action, duration, weight, height):
-        self.height = height
-        self.LEN_STEP = constants.LEN_STEP
         super().__init__(action, duration, weight)
-        self.training_type = 'SportsWalking'
+        self.height = height
         self.distance = self.get_distance()
         self.mean_speed = self.get_mean_speed()
         self.calories = self.get_spent_calories()
@@ -95,13 +96,13 @@ class SportsWalking(Training):
 
 class Swimming(Training):
     """Тренировка: плавание."""
+    training_type = 'Swimming'
+    LEN_STEP = constants.LEN_PADDLE
 
     def __init__(self, action, duration, weight, length_pool, count_pool):
         self.length_pool = length_pool
         self.count_pool = count_pool
         super().__init__(action, duration, weight)
-        self.LEN_STEP = constants.LEN_PADDLE
-        self.training_type = 'Swimming'
         self.distance = self.get_distance()
         self.mean_speed = self.get_mean_speed()
         self.calories = self.get_spent_calories()
