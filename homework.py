@@ -6,19 +6,19 @@ import constants
 class InfoMessage:
     """Информационное сообщение о тренировке."""
 
-    def __init__(self, training: 'Training') -> None:
-        self.training_type = training.training_type
-        self.duration = training.duration
-        self.distance = training.distance
-        self.mean_speed = training.mean_speed
-        self.calories = training.calories
+    def __init__(self, training_type, duration, distance, speed, calories) -> None:
+        self.training_type = training_type
+        self.duration = duration
+        self.distance = distance
+        self.speed = speed
+        self.calories = calories
 
     def get_message(self):
         """Возвращает строку с инфомацией о тренировке."""
         return (f'Тип тренировки: {self.training_type}; '
                 f'Длительность: {format(self.duration, ".3f")} ч.; '
                 f'Дистанция: {format(self.distance, ".3f")} км; '
-                f'Ср. скорость: {format(self.mean_speed, ".3f")} км/ч; '
+                f'Ср. скорость: {format(self.speed, ".3f")} км/ч; '
                 f'Потрачено ккал: {format(self.calories, ".3f")}.')
 
 
@@ -33,6 +33,7 @@ class Training:
                  duration: float,
                  weight: float,
                  ) -> None:
+        self.calories = None
         self.action = action
         self.duration = duration
         self.weight = weight
@@ -51,9 +52,9 @@ class Training:
         """Получить количество затраченных калорий."""
         pass
 
-    def show_training_info(self, training) -> InfoMessage:
+    def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
-        return InfoMessage(training)
+        return InfoMessage(self.training_type, self.duration, self.distance, self.mean_speed, self.calories)
 
 
 class Running(Training):
@@ -138,7 +139,7 @@ def read_package(workout_type: str, data: list) -> Training:
 
 def main(training: Union[Training, Running, SportsWalking, Swimming]) -> None:
     """Главная функция."""
-    print(training.show_training_info(training).get_message())
+    print(training.show_training_info().get_message())
 
 
 if __name__ == '__main__':
