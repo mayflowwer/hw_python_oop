@@ -1,5 +1,5 @@
 from dataclasses import dataclass, asdict
-from typing import Union
+from typing import Union, Type
 
 import constants
 
@@ -16,11 +16,11 @@ class InfoMessage:
 
     def get_message(self):
         """Возвращает строку с инфомацией о тренировке."""
-        return ('Тип тренировки: {}; '
-                'Длительность: {:.3f} ч.; '
-                'Дистанция: {:.3f} км; '
-                'Ср. скорость: {:.3f} км/ч; '
-                'Потрачено ккал: {:.3f}.').format(*asdict(self).values())
+        return ('Тип тренировки: {training_type}; '
+                'Длительность: {duration:.3f} ч.; '
+                'Дистанция: {distance:.3f} км; '
+                'Ср. скорость: {speed:.3f} км/ч; '
+                'Потрачено ккал: {calories:.3f}.').format(**asdict(self))
 
 
 class Training:
@@ -48,11 +48,11 @@ class Training:
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
-        pass
+        raise NotImplementedError
 
     def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
-        return InfoMessage(self.__class__.__name__,
+        return InfoMessage(type(self).__name__,
                            self.duration,
                            self.get_distance(),
                            self.get_mean_speed(),
@@ -68,9 +68,9 @@ class Running(Training):
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий в беге."""
-        return ((constants.RN_CALORIE_COEFF_1
+        return ((constants.RUNNING_CALORIE_COEFF_1
                 * self.get_mean_speed()
-                - constants.RN_CALORIE_COEFF_2)
+                - constants.RUNNING_CALORIE_COEFF_2)
                 * self.weight
                 / constants.M_IN_KM
                 * self.duration
@@ -87,9 +87,9 @@ class SportsWalking(Training):
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий в ходьбе."""
-        return ((constants.WLK_CALORIE_COEFF_1 * self.weight
+        return ((constants.WALKING_CALORIE_COEFF_1 * self.weight
                 + (self.get_mean_speed() ** 2 // self.height)
-                * constants.WLK_CALORIE_COEFF_2 * self.weight)
+                * constants.WALKING_CALORIE_COEFF_2 * self.weight)
                 * self.duration * constants.MIN_IN_H)
 
 
@@ -108,26 +108,33 @@ class Swimming(Training):
 
     def get_mean_speed(self) -> float:
         """Получить среднюю скорость движения."""
-        return self.length_pool * self.count_pool\
-            / constants.M_IN_KM / self.duration
+        return (self.length_pool * self.count_pool
+                / constants.M_IN_KM / self.duration)
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
-        return ((self.get_mean_speed() + constants.SWM_CALORIE_COEFF_1)
-                * constants.SWM_CALORIE_COEFF_2 * self.weight)
+        return ((self.get_mean_speed() + constants.SWIMMING_CALORIE_COEFF_1)
+                * constants.SWIMMING_CALORIE_COEFF_2 * self.weight)
 
 
 def read_package(workout_type: str, data: list) -> Training:
     """Прочитать данные полученные от датчиков."""
-    dct = {
+
+    workout_generator: dict[str, Type[
+        Union[Swimming, Running, SportsWalking]]] = {
         'SWM': Swimming,
         'RUN': Running,
         'WLK': SportsWalking
     }
 
-    for code, class_name in dct.items():
-        if workout_type == code:
-            training = dct[code](*data)
+    for type in workout_generator:
+        if workout_type not in workout_generator:
+            raise KeyError('Wrong key')
+        elif workout_type == type:
+            training: Union[
+                Swimming,
+                Running,
+                SportsWalking] = workout_generator[type](*data)
 
     return training
 
