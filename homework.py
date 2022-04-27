@@ -13,14 +13,11 @@ class InfoMessage:
     distance: float
     speed: float
     calories: float
+    info: str = constants.INFO_MESSAGE
 
     def get_message(self):
         """Возвращает строку с инфомацией о тренировке."""
-        return ('Тип тренировки: {training_type}; '
-                'Длительность: {duration:.3f} ч.; '
-                'Дистанция: {distance:.3f} км; '
-                'Ср. скорость: {speed:.3f} км/ч; '
-                'Потрачено ккал: {calories:.3f}.').format(**asdict(self))
+        return self.info.format(**asdict(self))
 
 
 class Training:
@@ -48,7 +45,7 @@ class Training:
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
-        raise NotImplementedError
+        raise NotImplementedError('Subclasses should implement this!')
 
     def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
@@ -63,18 +60,17 @@ class Running(Training):
     """Тренировка: бег."""
     LEN_STEP: float = constants.LEN_STEP
 
-    def __init__(self, action, duration, weight):
-        super().__init__(action, duration, weight)
-
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий в беге."""
-        return ((constants.RUNNING_CALORIE_COEFF_1
-                * self.get_mean_speed()
-                - constants.RUNNING_CALORIE_COEFF_2)
+        return ((constants.RUNNING_CALORIE_MULTIPLIER_COEFF
+                 * self.get_mean_speed()
+                 - constants.RUNNING_CALORIE_DOWNGRADER_COEFF
+                 )
                 * self.weight
                 / constants.M_IN_KM
                 * self.duration
-                * constants.MIN_IN_H)
+                * constants.MIN_IN_H
+                )
 
 
 class SportsWalking(Training):
@@ -87,10 +83,15 @@ class SportsWalking(Training):
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий в ходьбе."""
-        return ((constants.WALKING_CALORIE_COEFF_1 * self.weight
-                + (self.get_mean_speed() ** 2 // self.height)
-                * constants.WALKING_CALORIE_COEFF_2 * self.weight)
-                * self.duration * constants.MIN_IN_H)
+        return ((constants.WALKING_CALORIE_WEIGHT_MULTIPLIER_COEFF
+                 * self.weight
+                 + (self.get_mean_speed() ** 2 // self.height
+                    )
+                 * constants.WALKING_CALORIE_MEAN_SPEED_MULTIPLIER_COEFF
+                 * self.weight
+                 )
+                * self.duration * constants.MIN_IN_H
+                )
 
 
 class Swimming(Training):
@@ -113,29 +114,29 @@ class Swimming(Training):
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
-        return ((self.get_mean_speed() + constants.SWIMMING_CALORIE_COEFF_1)
-                * constants.SWIMMING_CALORIE_COEFF_2 * self.weight)
+        return ((self.get_mean_speed()
+                 + constants.SWIMMING_INCREASE_CALORIE_COEFF)
+                * constants.SWIMMING_CALORIE_MULTIPLIER_COEFF * self.weight)
 
 
 def read_package(workout_type: str, data: list) -> Training:
     """Прочитать данные полученные от датчиков."""
 
     workout_generator: dict[str, Type[
-        Union[Swimming, Running, SportsWalking]]] = {
+        Union[Training]]] = {
         'SWM': Swimming,
         'RUN': Running,
         'WLK': SportsWalking
     }
 
-    for type in workout_generator:
-        if workout_type not in workout_generator:
-            raise KeyError('Wrong key')
-        elif workout_type == type:
-            training: Union[
-                Swimming,
-                Running,
-                SportsWalking] = workout_generator[type](*data)
-
+    if workout_type not in workout_generator:
+        raise KeyError(
+            'Invalid training type. '
+            'Available types: {}'.format(', '.join(
+                [workout_type for workout_type in workout_generator])
+            )
+        )
+    training: Union[Training] = workout_generator[workout_type](*data)
     return training
 
 
